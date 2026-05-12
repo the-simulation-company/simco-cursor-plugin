@@ -4,18 +4,18 @@ A Cursor plugin that distributes skills for running customer simulations and act
 
 ## Install
 
-### Option 1: Import from GitHub (Recommended)
+### Option 1: GitHub CLI (Recommended)
 
-1. Open Cursor Settings (`Ctrl+Shift+J` / `Cmd+Shift+J`)
-2. Navigate to **Rules**
-3. In the **Project Rules** section, click **Add Rule** → **Remote Rule (GitHub)**
-4. Enter this repository URL: `the-simulation-company/simco-cursor-plugin`
+Install with [GitHub CLI](https://cli.github.com/) using `gh skill install`:
 
-This imports the rules and skills directly into your project.
+```bash
+cd your-project
+gh skill install the-simulation-company/simco-cursor-plugin --agent cursor --scope project
+```
+
+This installs both the rules and skills into your project's `.cursor/` directory.
 
 ### Option 2: Manual Copy
-
-Copy the `.cursor/` directory into your project root:
 
 ```bash
 # Clone this repo
@@ -78,4 +78,4 @@ This is the Cursor equivalent of [`simco-cc-plugin`](https://github.com/the-simu
 |---|---|
 | `using-simulations` skill (`user-invocable: false`) | `simulation-standing-order` rule (`alwaysApply: true`) |
 | `simulation-testing` skill | `simulation-testing` skill (same content, Cursor format) |
-| Plugin marketplace install | GitHub import or manual copy |
+| Plugin marketplace install | `gh skill install` or manual copy |
