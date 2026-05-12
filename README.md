@@ -4,34 +4,30 @@ A Cursor plugin that distributes skills for running customer simulations and act
 
 ## Install
 
-### Option 1: GitHub CLI (Recommended)
-
-Install with [GitHub CLI](https://cli.github.com/) using `gh skill install`:
+### Step 1: Install the skill
 
 ```bash
 cd your-project
-gh skill install the-simulation-company/simco-cursor-plugin --agent cursor --scope project
+gh skill install the-simulation-company/simco-cursor-plugin --agent cursor --scope project --allow-hidden-dirs
 ```
 
-This installs both the rules and skills into your project's `.cursor/` directory.
+This installs the `simulation-testing` skill into your project's `.cursor/skills/` directory.
 
-### Option 2: Manual Copy
+### Step 2: Install the rule
 
 ```bash
-# Clone this repo
+mkdir -p .cursor/rules
+curl -sSL -o .cursor/rules/simulation-standing-order.mdc \
+  https://raw.githubusercontent.com/the-simulation-company/simco-cursor-plugin/main/.cursor/rules/simulation-standing-order.mdc
+```
+
+This installs the `simulation-standing-order` rule that automatically triggers the skill for customer-facing changes.
+
+### Alternative: Manual Copy
+
+```bash
 git clone https://github.com/the-simulation-company/simco-cursor-plugin.git
-
-# Copy into your project
 cp -r simco-cursor-plugin/.cursor/ /path/to/your/project/.cursor/
-```
-
-### Option 3: Git Submodule
-
-```bash
-cd your-project
-git submodule add https://github.com/the-simulation-company/simco-cursor-plugin.git .cursor-plugin
-# Then symlink or copy the .cursor directory
-ln -s .cursor-plugin/.cursor .cursor
 ```
 
 ## What's Included
@@ -55,6 +51,7 @@ ln -s .cursor-plugin/.cursor .cursor
 ## Prerequisites
 
 - [Cursor](https://cursor.com) IDE
+- [GitHub CLI](https://cli.github.com/) (for `gh skill install`)
 - The Simulation Company MCP server configured in your Cursor MCP settings
 
 ## Repo Layout
@@ -78,4 +75,4 @@ This is the Cursor equivalent of [`simco-cc-plugin`](https://github.com/the-simu
 |---|---|
 | `using-simulations` skill (`user-invocable: false`) | `simulation-standing-order` rule (`alwaysApply: true`) |
 | `simulation-testing` skill | `simulation-testing` skill (same content, Cursor format) |
-| Plugin marketplace install | `gh skill install` or manual copy |
+| Plugin marketplace install | `gh skill install` + `curl` for rule |
