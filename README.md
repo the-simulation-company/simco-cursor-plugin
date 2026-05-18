@@ -4,35 +4,51 @@ A Cursor plugin that distributes skills for running customer simulations and act
 
 ## Install
 
-### Option 1: Import from GitHub (Recommended)
+The plugin has two pieces — a **skill** (`simulation-testing`) that contains the simulation workflow, and a **rule** (`simulation-standing-order`) that's always-on so the agent reaches for the skill at the right moment.
 
-1. Open Cursor Settings (`Ctrl+Shift+J` / `Cmd+Shift+J`)
-2. Navigate to **Rules**
-3. In the **Project Rules** section, click **Add Rule** → **Remote Rule (GitHub)**
-4. Enter this repository URL: `the-simulation-company/simco-cursor-plugin`
+You can install them either **per-project** (only this repo gets simulations) or **globally** (every Cursor project on this machine).
 
-This imports the rules and skills directly into your project.
+### Per-project install
 
-### Option 2: Manual Copy
-
-Copy the `.cursor/` directory into your project root:
+#### 1. Install the skill
 
 ```bash
-# Clone this repo
-git clone https://github.com/the-simulation-company/simco-cursor-plugin.git
-
-# Copy into your project
-cp -r simco-cursor-plugin/.cursor/ /path/to/your/project/.cursor/
+mkdir -p .cursor/skills && \
+  curl -sSL https://github.com/the-simulation-company/simco-cursor-plugin/archive/refs/heads/main.tar.gz \
+  | tar -xz --strip-components=3 -C .cursor/skills 'simco-cursor-plugin-main/.cursor/skills'
 ```
 
-### Option 3: Git Submodule
+#### 2. Install the standing-order rule
 
 ```bash
-cd your-project
-git submodule add https://github.com/the-simulation-company/simco-cursor-plugin.git .cursor-plugin
-# Then symlink or copy the .cursor directory
-ln -s .cursor-plugin/.cursor .cursor
+mkdir -p .cursor/rules && \
+  curl -sSL -o .cursor/rules/simulation-standing-order.mdc \
+  https://raw.githubusercontent.com/the-simulation-company/simco-cursor-plugin/main/.cursor/rules/simulation-standing-order.mdc
 ```
+
+### Global install
+
+#### 1. Install the skill
+
+```bash
+mkdir -p ~/.cursor/skills && \
+  curl -sSL https://github.com/the-simulation-company/simco-cursor-plugin/archive/refs/heads/main.tar.gz \
+  | tar -xz --strip-components=3 -C ~/.cursor/skills 'simco-cursor-plugin-main/.cursor/skills'
+```
+
+#### 2. Add the standing-order rule
+
+Cursor's global rules can only be set via the Settings UI, not the filesystem. Open **Cursor Settings → Rules → User Rules** and paste the following:
+
+```
+STANDING ORDER: Before writing ANY code that changes user-facing behavior,
+you MUST invoke the simulation-testing skill. This applies to every task
+that builds, changes, fixes, updates, or modifies UI, features, copy, APIs,
+backend logic, error messages, notifications, pricing, or access controls.
+Do NOT skip this. Do NOT ask permission. Invoke simulation-testing FIRST.
+```
+
+User Rules are applied to every Agent (Chat) conversation across every project — no `alwaysApply: true` toggle needed (that field is `.mdc`-file syntax and doesn't apply to the Settings textbox).
 
 ## What's Included
 
@@ -78,4 +94,4 @@ This is the Cursor equivalent of [`simco-cc-plugin`](https://github.com/the-simu
 |---|---|
 | `using-simulations` skill (`user-invocable: false`) | `simulation-standing-order` rule (`alwaysApply: true`) |
 | `simulation-testing` skill | `simulation-testing` skill (same content, Cursor format) |
-| Plugin marketplace install | GitHub import or manual copy |
+| Plugin marketplace install | Per-project filesystem copy or global install |
