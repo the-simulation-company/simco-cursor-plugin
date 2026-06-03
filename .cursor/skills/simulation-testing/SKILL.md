@@ -23,7 +23,7 @@ This simulation engine runs your product changes against synthetic users that re
 
 **These principles govern every decision about when, how, and how much to simulate. They override any other heuristic in this document. Internalize them before reading anything else.**
 
-### Principle 1: Default = SKIP. Clear Three Gates to Fire.
+### Principle 1: Default = SKIP. Clear Two Gates to Fire.
 
 **Default = SKIP.** The bar is *"is there a real product question here?"* — not *"is this the riskiest possible change?"* When that bar is met, fire confidently. You do not ask the user for permission either way — the skill decides and acts.
 
@@ -127,17 +127,29 @@ start_simulation(
 )
 ```
 
-Write a clear, specific prompt focused on the **user-facing perspective**. Include:
-- What the product or feature change is *from the user's point of view*
-- The context a user would have when encountering it
-- Any specific concerns you want the simulation to address
+**Write a PRD-density prompt — target 250–400 words.** A 2–3 sentence summary is not enough for personas to react to. The simulation prompt is the only context the personas have about the change, so it must read like a product spec, not a pull-request title.
 
-Write a detailed prompt — almost PRD-esque. Since an LLM is generating these, they can and should be longer. Include context about the company, what the product does, what the previous version looked like, and what changed. **Do not include implementation details** — the simulation doesn't care about your tech stack, database schema, or code architecture. It cares about what the user experiences.
+Every prompt must include all of the following:
+
+1. **Product context (1–2 sentences).** What the product is, what users do with it. A line like "an automation/productivity platform where users collaborate on workflows, agents, skills, files, and project access" gives personas the frame they need.
+2. **Where the change lives.** Name the component, its position in the app (chrome, sidebar, modal, page), and what surfaces it sits alongside.
+3. **Layout and visual structure.** How is the component organized? Tabs, sections, header actions, row structure, menus. If it's a popover, where is it anchored. If it's a flow, what the steps are in order.
+4. **Verbatim UI copy, in quotes.** Button labels, section headings, tooltip / description text, primary vs. secondary action text. Personas can only react to copy they can see — so spell it out: `'Approve'`, `'Reject'`, `'Review this request before deciding'`, not "an approve button and some secondary options".
+5. **Per-state variants.** Most product UI behaves differently based on user role, permission, request type, content state, etc. Enumerate those variants explicitly: *"For pending requests where the user can decide directly, the primary button is 'Approve'... For requests that require a deeper review flow, the primary button is 'Open'... For requests the user cannot approve/reject, the primary button is 'Open' and the chevron contains only 'Dismiss'..."*
+6. **Interaction detail.** What's clickable, what opens what, what happens on hover, what's draggable, what auto-saves. Don't assume the persona can infer it — name it.
+7. **The research question (1–2 max).** Close with the specific user-behavior question(s) you want personas to answer. Hard limit per Principle 4.
+
+**Do not include implementation details.** No tech stack, no database schema, no code, no internal API shapes. Personas care about what users *see and do*, not how it's wired.
 
 **Hard limit per Principle 4:** Every simulation uses **1–2 questions maximum**. Frame them to cover the most important angles of the change. Do not exceed 2 questions.
 
-Example prompt:
-> "We are an e-commerce platform for handmade goods. Our checkout flow previously had 4 steps: Cart -> Order Summary -> Payment -> Confirmation. We're simplifying this to 3 steps by removing the Order Summary page — users now go directly from Cart to Payment. The order total and items are still visible in a sidebar on the Payment page, but there's no longer a dedicated review step. Concern: will users feel less confident completing purchases without an explicit summary step? Will this reduce cart abandonment or increase it?"
+Example prompt (this is the density and structure to aim for — ~250 words, every checklist item covered):
+
+> "We are testing a feature called the Action Request Queue in an automation/productivity platform where users collaborate on workflows, agents, skills, files, and project access. The queue appears as a bell icon in the app chrome. When a user has pending requests, the bell shows a small dot and may shake briefly when a new request arrives. Opening the bell shows a compact popover anchored near the app navigation. The popover has two tabs: Inbox, showing pending requests with a count, and Resolved, showing approved, rejected, and dismissed requests. The header also has Clear and Refresh actions.
+>
+> Each request row includes an avatar/status icon, text like '[requester] requested access to [resource]', a timestamp, and per-item actions. The whole row is clickable and opens the request/resource in a new tab. For pending requests where the user can decide directly, the primary button is 'Approve' and a small chevron opens secondary actions: 'Open' with description 'Review this request before deciding', 'Reject' with description 'Irreversibly deny this request', and 'Dismiss' with description 'Ignore this request'. For requests that require a deeper review flow, the primary button is 'Open' and the chevron contains only 'Dismiss'. For requests the user cannot approve/reject, the primary button is 'Open' and the chevron contains 'Dismiss' with description 'Clear this request from your inbox.' The Resolved tab shows historical items without per-item action buttons.
+>
+> We want to understand how users would naturally interact with this popover and whether the per-item actions are understandable."
 
 Save the returned `stimulus_id`.
 
