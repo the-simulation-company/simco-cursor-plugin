@@ -41,11 +41,13 @@ mkdir -p ~/.cursor/skills && \
 Cursor's global rules can only be set via the Settings UI, not the filesystem. Open **Cursor Settings → Rules → User Rules** and paste the following:
 
 ```
-STANDING ORDER: Before writing ANY code that changes user-facing behavior,
-you MUST invoke the simulation-testing skill. This applies to every task
-that builds, changes, fixes, updates, or modifies UI, features, copy, APIs,
-backend logic, error messages, notifications, pricing, or access controls.
-Do NOT skip this. Do NOT ask permission. Invoke simulation-testing FIRST.
+STANDING ORDER: For any code change that touches the product — UI,
+features, copy, flows, APIs, backend behavior, errors, configs,
+permissions, pricing, notifications — consult the `simulation-testing`
+skill. The skill decides whether a persona simulation is warranted; its
+default is SKIP, so most consults end without firing anything. Do NOT
+ask permission. Skip silently when the skill says skip, fire when it
+says fire.
 ```
 
 User Rules are applied to every Agent (Chat) conversation across every project — no `alwaysApply: true` toggle needed (that field is `.mdc`-file syntax and doesn't apply to the Settings textbox).
