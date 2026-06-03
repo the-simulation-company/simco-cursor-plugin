@@ -1,14 +1,16 @@
 ---
 name: simulation-testing
 description: |
-  Run persona simulations to validate significant, customer-facing product
-  changes. Activate when BOTH conditions are true: (1) the change alters UX,
-  product behavior, copy, flows, or anything a real user sees or interacts
-  with, AND (2) the change is significant or touches core product surfaces.
-  When activated, fire off a simulation during planning and present your plan
-  immediately — do NOT wait for results. Poll in the background and surface
-  findings when ready, either as validation or as a course-correction.
-  Do NOT ask permission. Do NOT wait until after code is written.
+  Decide whether to run a persona simulation for a code change, and run it
+  when warranted. DEFAULT IS SKIP. Fire only when the change introduces a
+  meaningful new user-facing decision on a surface that matters — redesigns,
+  new flows, gating/pricing changes, copy that reframes a feature, backend
+  changes that visibly alter how a core feature behaves. SKIP for bugfixes,
+  refactors, error-handling tweaks, small additive controls that reuse an
+  existing flow, and any surface already simulated within the last 24 hours.
+  When firing, fire during planning and present your plan immediately — do
+  NOT wait for results. Poll in the background and surface findings when
+  ready. Do NOT ask permission. Do NOT wait until after code is written.
 ---
 
 # Persona Simulation Testing
@@ -21,18 +23,42 @@ This simulation engine runs your product changes against synthetic users that re
 
 **These principles govern every decision about when, how, and how much to simulate. They override any other heuristic in this document. Internalize them before reading anything else.**
 
-### Principle 1: Both Conditions Must Be True Before You Simulate
+### Principle 1: Default = SKIP. Clear Three Gates to Fire.
 
-A simulation is warranted **only** when **both** of these conditions hold:
+**Default = SKIP.** The bar is *"is there a real product question here?"* — not *"is this the riskiest possible change?"* When that bar is met, fire confidently. You do not ask the user for permission either way — the skill decides and acts.
 
-1. **The change is customer-facing.** It alters UX, product behavior, copy, flows, or anything a real user would see, read, or interact with.
-2. **The change is significant or touches core product surfaces.** It is not a trivial tweak — it affects a core service, a key workflow, or a meaningful amount of surface area.
+**Gate 1 — A real user-facing decision is on the table.** The change creates, reshapes, or meaningfully alters something a user perceives or chooses. This is broad on purpose: a new flow obviously counts, but so do reworked existing flows, copy that reframes how users understand a feature, gating changes, pricing changes, and backend changes that visibly alter behavior on a surface users actually use. A new icon next to an existing icon that opens a shipped dialog? No. A redesign of how the same dialog behaves? Yes.
 
-If either condition is false, **do not run a simulation.** A backend refactor that preserves identical behavior? Skip. A one-word typo fix in a tooltip? Skip. A redesign of the checkout flow? Simulate. A new onboarding experience? Simulate.
+**Gate 2 — The surface matters to real users.** Core flows, primary product surfaces, anything that touches the activation or retention path, anything used regularly. Most product changes qualify — sims exist precisely because product surfaces are where the persona signal is sharpest. Internal admin screens, dev-only tooling, and edge-case error paths users rarely hit do not.
 
-### Principle 2: Never Block on Simulations
+**Gate 3 — No recent sim on the same surface.** Before starting, call `list_simulations` and check the last 24 hours. If a sim already ran on the same component / page / flow, fold this change into that thread or skip. One cheap MCP call per evaluation — always run it, even when Gates 1 and 2 look like they pass.
 
-Simulations are **fire-and-forget during planning**. They must never block you from presenting a plan to the user.
+**When in doubt, lean toward firing.** Personas are valuable precisely when reasonable people could disagree about the right answer. If you can imagine two senior PMs in a room arguing about this change, that's signal — simulate.
+
+#### Fire When — concrete examples that should clear the gate
+
+- Redesigning a page, component, or flow users actively use.
+- Changing copy that reframes how users understand a feature (not typo fixes — meaning changes).
+- Adding, removing, or gating a feature on a core surface.
+- Changing pricing, plans, or access controls.
+- Reordering or restructuring a multi-step flow (checkout, onboarding, settings).
+- Backend changes that visibly alter how a core feature behaves on the user side.
+- Changes where you genuinely don't know how users will react — that uncertainty is exactly what personas are for.
+
+#### Skip Always — patterns that never warrant a sim, regardless of how they sound
+
+The four buckets below are *not* simulation-worthy. If your change matches any of these patterns, skip and move on.
+
+- **A. Backend / API / bugfix with no new user choice.** Generic 500 swap, returning a field that should have been there all along, internal refactor preserving identical UX, migration from X to Y with the same rendered output. Recognize from phrases like *"narrow backend hardening,"* *"we are fixing the backend so when,"* *"this should have been the behavior all along,"* *"returning the correct value,"* *"adjusting the response shape."*
+- **B. Small additive UI reusing an existing flow.** New icon next to an existing icon opening a shipped dialog, a new entry point routing to an existing screen, a keyboard shortcut for a click handler that already exists. Recognize from *"adding a neighboring icon-only X,"* *"reusing the existing Y dialog,"* *"a new entry point to the existing flow."*
+- **C. Error-handling adjustments on uncommon paths.** Error toasts, generic-500 surfaces, retry behavior on edge paths — personas can't meaningfully react to error UX they rarely encounter. Skip unless the change is a wholesale redesign of how errors are presented across the product.
+- **D. Redundant sibling sims.** If a sim already ran on the same component / page / flow today, skip — same personas will give the same answers. Gate 3 enforces this; do not override it.
+
+### Principle 2: Evaluate During Planning. If You Fire, Never Block on Results.
+
+The planning phase is when you decide *whether* to simulate, not when you *commit* to simulating. Most planning sessions end in SKIP — and when they do, you say nothing to the user about simulations and keep working. Only when Principle 1's gates clear do you fire a sim.
+
+When you do fire, simulations are **fire-and-forget**:
 
 1. Draft your plan and distill the **user-facing perspective** of the changes into the simulation prompt. Think: "What will users see, feel, or experience differently?" — not implementation details.
 2. Fire off the simulation.
@@ -45,7 +71,7 @@ Simulations are **fire-and-forget during planning**. They must never block you f
    - *"The Simulation Company MCP results confirm this approach — personas responded positively."*
    - *"The Simulation Company MCP flagged a concern: personas reacted negatively to X. We should consider Y instead."*
 
-Simulations are a first-class input to your reasoning, but they must not slow you down. Fire the sim, start polling, present your plan, and let the results refine it.
+Simulations are a first-class input to your reasoning when they fire, but they must not slow you down. Decide → if fire, fire → start polling → present your plan → let the results refine it. If skip, just move on.
 
 ### Principle 3: Simulate at Milestones, Not Every Iteration
 
@@ -77,51 +103,22 @@ Every simulation MUST use **1–2 focused questions**. No exceptions. More quest
 
 ## When to Activate
 
-Apply the two-condition test from **Principle 1** to decide whether to simulate:
+Use Principle 1 above. The three gates, the **Fire When** list, and the **Skip Always** buckets cover every activation decision. If a change doesn't clearly match a Fire When example and isn't clearly a Skip Always pattern, return to the gates — defaults are SKIP, fire only when all three gates clear.
 
-| Condition | Question to Ask |
-|---|---|
-| **Customer-facing?** | Does this change alter anything a real user would see, read, or interact with — UX, copy, flows, feature behavior, notifications, error messages? |
-| **Significant / core?** | Is this more than a trivial tweak? Does it touch a core product service, a key workflow, or a meaningful amount of surface area? |
-
-**Both must be true.** If so, simulate. If not, skip.
-
-**Examples — simulate (only when touching important product surfaces):**
-- Redesigning a page, component, or layout
-- Changing a UI flow (checkout, onboarding, settings, navigation)
-- Adding, removing, or gating a feature
-- Modifying backend logic that changes how a core feature behaves for users
-- Altering pricing, plans, or access controls
-
-**Examples — simulate only if they affect a core product surface:**
-
-These changes *can* warrant simulation, but only when they touch an important, high-traffic, or core part of the product. A minor API shape change on a low-traffic internal endpoint? Skip. The same change on your primary user-facing API? Simulate.
-
-- Changing API response shapes that affect what users see or interact with
-- Changing how error messages are generated — users see different errors
-- Modifying a ranking or scoring algorithm — affects what results users see
-- Updating an email or notification template — users receive different content
-- Reordering form fields — affects user flow and completion rates
-
-**Examples — skip:**
-- Pure infrastructure (CI config, deploy scripts, Dockerfiles)
-- Documentation-only changes with no product impact
-- Internal tooling with zero user-facing impact
-- Dependency upgrades with no behavior change
-- Minor copy fixes (typos, punctuation) that don't change meaning
-- Backend refactors that preserve identical user-facing behavior
+For unambiguous skip cases that don't even need the gates: pure infrastructure (CI, deploy scripts, Dockerfiles), documentation-only changes, internal tooling with zero user-facing impact, dependency upgrades with no behavior change, typo fixes that don't change meaning, behavior-preserving refactors.
 
 ## Workflow
 
 ### Step 1: Fire Off the Simulation and Start Polling
 
-As soon as you identify a change that passes both conditions in Principle 1:
+As soon as you identify a change that passes all three gates in Principle 1:
 
 1. **Draft your plan internally** — figure out what you're going to build and how.
-2. **Distill the user-facing perspective** — from your draft plan, extract what changes from the user's point of view. Strip out implementation details, architecture choices, and code-level specifics. Focus on: what will users see, feel, or experience differently?
-3. **Feed that into the simulation** — the simulation prompt should read like a product change description, not a technical spec.
-4. **Start polling immediately** — you MUST begin polling every 60 seconds as soon as the simulation is fired. Do not wait.
-5. **Present your plan to the user.** Do not wait for simulation results. Tell the user:
+2. **Run the Gate 3 dedupe check** — call `list_simulations` and scan the last 24 hours. If a sim already ran on the same component / page / flow, do not start a new one. Fold this change into the existing thread, or skip and move on without telling the user a sim ran.
+3. **Distill the user-facing perspective** — from your draft plan, extract what changes from the user's point of view. Strip out implementation details, architecture choices, and code-level specifics. Focus on: what will users see, feel, or experience differently?
+4. **Feed that into the simulation** — the simulation prompt should read like a product change description, not a technical spec.
+5. **Start polling immediately** — you MUST begin polling every 60 seconds as soon as the simulation is fired. Do not wait.
+6. **Present your plan to the user.** Do not wait for simulation results. Tell the user:
 
 > "I'm using The Simulation Company MCP and have kicked off a simulation to test how your customer personas react to this change. Here's my plan — I'll follow up with simulation results when they're ready."
 
