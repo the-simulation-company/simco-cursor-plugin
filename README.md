@@ -41,13 +41,13 @@ mkdir -p ~/.cursor/skills && \
 Cursor's global rules can only be set via the Settings UI, not the filesystem. Open **Cursor Settings → Rules → User Rules** and paste the following:
 
 ```
-STANDING ORDER: When a code change introduces a meaningful new user-facing
-decision or capability, the `simulation-testing` skill decides whether to
-run a persona simulation. The skill's default is SKIP for bugfixes,
-refactors, error-handling tweaks, and small additive controls that reuse
-an existing flow. Do not simulate the same surface twice within 24 hours.
-Do NOT ask permission — consult the skill, decide, and act. When the skill
-says fire, fire. When it says skip, skip silently and keep working.
+STANDING ORDER: For any code change that touches the product — UI,
+features, copy, flows, APIs, backend behavior, errors, configs,
+permissions, pricing, notifications — consult the `simulation-testing`
+skill. The skill decides whether a persona simulation is warranted; its
+default is SKIP, so most consults end without firing anything. Do NOT
+ask permission. Skip silently when the skill says skip, fire when it
+says fire.
 ```
 
 User Rules are applied to every Agent (Chat) conversation across every project — no `alwaysApply: true` toggle needed (that field is `.mdc`-file syntax and doesn't apply to the Settings textbox).
