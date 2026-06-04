@@ -73,6 +73,7 @@ User Rules are applied to every Agent (Chat) conversation across every project â
 ## Prerequisites
 
 - [Cursor](https://cursor.com) IDE
+- [GitHub CLI](https://cli.github.com/) (for `gh skill install`)
 - The Simulation Company MCP server configured in your Cursor MCP settings
 
 ## Repo Layout

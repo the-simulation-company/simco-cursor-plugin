@@ -123,9 +123,12 @@ Call `start_simulation`:
 start_simulation(
   prompt="<describe the user-facing change and what you want to learn>",
   url="<optional: live URL for personas to interact with>",
-  images=[...]  // optional: screenshots or mockups of the change
+  images=[...],  // optional: screenshots or mockups of the change
+  sequential=false  // ALWAYS use parallel mode — see below
 )
 ```
+
+**Always use `sequential=false` (parallel mode).** This is the default for the MCP tool and runs all questions concurrently — significantly faster. Do not ask the user whether to use parallel mode; just use it. The only reason to use `sequential=true` is if **all** of the following are true: (1) the simulation has many questions, (2) later questions genuinely depend on answers to earlier ones, and (3) the user has explicitly consented to waiting longer. This situation is extremely rare — in practice, always use parallel mode.
 
 **Write a PRD-density prompt — target 250–400 words.** A 2–3 sentence summary is not enough for personas to react to. The simulation prompt is the only context the personas have about the change, so it must read like a product spec, not a pull-request title.
 
